@@ -1,8 +1,9 @@
-import { createContext, useState } from "react";
+import { createContext, useState , useContext } from "react";
 
-export const ThemeContext = createContext();
 
-export function ThemeProvider({ children }) {
+const ThemeContext = createContext();
+
+export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState("light");
 
   const toggleTheme = () => {
@@ -14,4 +15,12 @@ export function ThemeProvider({ children }) {
       {children}
     </ThemeContext.Provider>
   );
+};
+ 
+export const useTheme = ()=>{
+  const context = useContext(ThemeContext);
+  if(!context){
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
 }

@@ -1,15 +1,11 @@
 import React from 'react';
-import MouseTracker from './components/RenderProps/logic';
+import { useState } from 'react';
 
 function App() {
-
   return (
     <>
-      <MouseTracker 
-      render={(x)=> <h1>Mouse x: {x}</h1>}/>
+    
     </>
-      
   );
 }
-
 export default App;

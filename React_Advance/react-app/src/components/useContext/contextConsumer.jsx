@@ -1,10 +1,12 @@
-import { useContext } from "react";
-import { ThemeContext } from "./themeContext";
 
+import { useTheme } from "./themeContext";
 function Page() {
-  const theme = useContext(ThemeContext);
+  const {theme,toggleTheme} = useTheme();
 
-  return <h1>Current theme: {theme}</h1>;
+  return <>
+  <button className="border-2 p-2" onClick={toggleTheme}>Change Theme</button>
+  <h1>Current theme: {theme}</h1>
+  </>
 }
 
 export default Page;
