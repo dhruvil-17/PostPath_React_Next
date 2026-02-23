@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/firebaseClient";
-import { collection, addDoc, getDocs , query, where , or, doc , deleteDoc , updateDoc} from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  getDoc,
+  query,
+  where,
+  or,
+  doc,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 //create task
 export async function POST(req) {
@@ -11,7 +22,6 @@ export async function POST(req) {
       ...body,
       createdAt: new Date(),
     });
-    
 
     return NextResponse.json({
       id: docRef.id,
@@ -24,8 +34,6 @@ export async function POST(req) {
 }
 
 //get tasks
-import { doc, getDoc, collection, query, where, or, getDocs } from "firebase/firestore";
-
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -38,7 +46,7 @@ export async function GET(req) {
       );
     }
 
-    
+    // Get user role
     const userRef = doc(db, "users", uid);
     const userSnap = await getDoc(userRef);
 
@@ -49,19 +57,18 @@ export async function GET(req) {
       );
     }
 
-    const userData = userSnap.data();
-    const role = userData.role;
-
+    const role = userSnap.data().role;
+  
+    
     const tasksRef = collection(db, "tasks");
 
-    let snapshot;
+    let snapshot; 
 
-    
     if (role === "admin") {
+  
       snapshot = await getDocs(tasksRef);
-    } 
+    } else {
     
-    else {
       const q = query(
         tasksRef,
         or(
@@ -87,6 +94,18 @@ export async function GET(req) {
     );
   }
 }
+//delete tasks
+export async function DELETE(req) {
+  try {
+    const { id } = await req.json();
+
+    await deleteDoc(doc(db, "tasks", id));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
 
 //update tasks
 export async function PATCH(req) {
@@ -97,11 +116,7 @@ export async function PATCH(req) {
     await updateDoc(taskRef, updates);
 
     return NextResponse.json({ id, ...updates });
-
   } catch (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

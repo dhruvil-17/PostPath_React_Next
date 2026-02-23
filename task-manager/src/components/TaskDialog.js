@@ -11,6 +11,7 @@ import {
   MenuItem,
   Typography,
   Divider,
+  Chip,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 
@@ -20,6 +21,7 @@ export default function TaskDialog({
   handleSubmit,
   initialData,
   users,
+  role,
 }) {
   const {
     control,
@@ -36,7 +38,6 @@ export default function TaskDialog({
     },
   });
 
- 
   useEffect(() => {
     if (initialData) {
       reset(initialData);
@@ -57,11 +58,19 @@ export default function TaskDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth>
-      <DialogTitle>{initialData ? "Edit Task" : "Add Task"}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+     
+    >
+      <DialogTitle sx={{ fontWeight: 600, fontSize: 22 }}>
+        {initialData ? "✏️ Edit Task" : "🚀 Create New Task"}
+      </DialogTitle>
 
-      <DialogContent>
-        
+      <DialogContent sx={{ mt: 1 }}>
+        {/* Title */}
         <Controller
           name="title"
           control={control}
@@ -69,16 +78,21 @@ export default function TaskDialog({
           render={({ field }) => (
             <TextField
               {...field}
-              label="Title"
+              label="Task Title"
               fullWidth
               margin="normal"
               error={!!errors.title}
               helperText={errors.title?.message}
+              variant="outlined"
+              sx={{
+                input: { color: "#fff" },
+                label: { color: "#aaa" },
+              }}
             />
           )}
         />
 
-        
+        {/* Description */}
         <Controller
           name="description"
           control={control}
@@ -86,21 +100,31 @@ export default function TaskDialog({
           render={({ field }) => (
             <TextField
               {...field}
-              label="Description"
+              label="Task Description"
               fullWidth
+              multiline
+              rows={3}
               margin="normal"
               error={!!errors.description}
               helperText={errors.description?.message}
+              sx={{
+                textarea: { color: "#fff" },
+                label: { color: "#aaa" },
+              }}
             />
           )}
         />
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.1)" }} />
 
-        <Typography variant="subtitle1" fontWeight="600">
-          Assign Task To
+        <Typography
+          variant="subtitle1"
+          sx={{ fontWeight: 600, mb: 1, opacity: 0.8 }}
+        >
+          Assignment & Status
         </Typography>
 
+        {/* Assign To */}
         <Controller
           name="assignedTo"
           control={control}
@@ -111,17 +135,21 @@ export default function TaskDialog({
               label="Assign To"
               fullWidth
               margin="normal"
+              sx={{
+                label: { color: "#aaa" },
+              }}
             >
               <MenuItem value="">Unassigned</MenuItem>
               {users?.map((user) => (
                 <MenuItem key={user.uid} value={user.uid}>
-                  {user.name}
+                  👤 {user.name}
                 </MenuItem>
               ))}
             </TextField>
           )}
         />
 
+        
         <Controller
           name="status"
           control={control}
@@ -136,18 +164,44 @@ export default function TaskDialog({
               error={!!errors.status}
               helperText={errors.status?.message}
             >
-              <MenuItem value="todo">Todo</MenuItem>
-              <MenuItem value="in-progress">In Progress</MenuItem>
-              <MenuItem value="done">Done</MenuItem>
+              <MenuItem value="todo">
+                <Chip label="Todo" size="small" />
+              </MenuItem>
+              <MenuItem value="in-progress">
+                <Chip label="In Progress" color="warning" size="small" />
+              </MenuItem>
+              <MenuItem value="done">
+                <Chip label="Done" color="success" size="small" />
+              </MenuItem>
             </TextField>
           )}
         />
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button variant="contained" onClick={submitForm(onSubmit)}>
-          {initialData ? "Update" : "Create"}
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          sx={{
+            borderRadius: 3,
+            textTransform: "none",
+            px: 3,
+          }}
+        >
+          Cancel
+        </Button>
+
+        <Button
+          variant="contained"
+          onClick={submitForm(onSubmit)}
+          sx={{
+            borderRadius: 3,
+            px: 4,
+            textTransform: "none",
+            background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+          }}
+        >
+          {initialData ? "Update Task" : "Create Task"}
         </Button>
       </DialogActions>
     </Dialog>
