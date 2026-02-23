@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebaseClient";
@@ -12,61 +12,90 @@ import {
   Card,
   CardContent,
   Typography,
-  Box
+  Box,
 } from "@mui/material";
+import { useState } from "react";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error,setError] = useState(null)
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const [error, setError] = useState(null);
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const onSubmit = async (data) => {
     try {
-      const res = await signInWithEmailAndPassword(auth, email, password);
+      const res = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
 
       const snap = await getDoc(doc(db, "users", res.user.uid));
 
-      if (!snap.exists()) return alert("User profile not found");
+      if (!snap.exists()) {
+        setError("User profile not found");
+        return;
+      }
 
       router.push("/dashboard");
     } catch (err) {
-      setError(getFirebaseErrorMessage(err.code))
+      setError(getFirebaseErrorMessage(err.code));
     }
   };
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
-      <Card className="w-1/4">
+      <Card className="w-96">
         <CardContent className="space-y-4">
           <Typography variant="h5" textAlign="center">
             Login
           </Typography>
-        <Box className="flex flex-col gap-3">
-          <TextField
-            label="Email"
-            fullWidth
-            onChange={(e) => setEmail(e.target.value)}
-          />
 
-          <TextField
-            label="Password"
-            type="password"
-            fullWidth
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <Button
-            variant="contained"
-            fullWidth
-            onClick={handleLogin}
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-3"
           >
-            Login
-          </Button>
-          <div>
-            {error && <p className="text-red-500">{error}</p>}
-          </div>
-        </Box>
+            <TextField
+              label="Email"
+              fullWidth
+              {...register("email", {
+                required: "Email is required",
+              })}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+            />
+
+            <TextField
+              label="Password"
+              type="password"
+              fullWidth
+              {...register("password", {
+                required: "Password is required",
+              })}
+              error={!!errors.password}
+              helperText={errors.password?.message}
+            />
+
+            <Button type="submit" variant="contained" fullWidth>
+              Login
+            </Button>
+
+            {error && (
+              <Typography color="error" variant="body2">
+                {error}
+              </Typography>
+            )}
+
+            <Typography variant="body2">
+              Don't have an account?{" "}
+              <span
+                className="text-blue-600 cursor-pointer"
+                onClick={() => router.push("/register")}
+              >
+                Sign Up
+              </span>
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
     </div>

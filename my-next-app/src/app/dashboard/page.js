@@ -9,3 +9,4 @@ export default function Dashboard() {
 
   return <p>Welcome {session.user.email}</p>;
 }
+

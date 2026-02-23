@@ -13,11 +13,19 @@ export default function AuthProvider({ children }) {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Fetch Firestore profile
+        // fetching firestore profile
         const snap = await getDoc(doc(db, "users", user.uid));
 
         if (snap.exists()) {
-          dispatch(setUser(snap.data()));
+          const data = snap.data();
+
+          const serializedUser = {
+            ...data,
+            createdAt: data.createdAt?.toDate().toISOString(),
+            updatedAt: data.updatedAt?.toDate().toISOString(),
+          };
+
+          dispatch(setUser(serializedUser));
         } else {
           dispatch(clearUser());
         }
