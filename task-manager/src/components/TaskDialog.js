@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -14,6 +14,8 @@ import {
   Chip,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
+import { Pagination, Stack } from "@mui/material";
+
 
 export default function TaskDialog({
   open,
@@ -23,18 +25,20 @@ export default function TaskDialog({
   users,
   role,
 }) {
-  const {
-    control,
-    handleSubmit: submitForm,
-    reset,
-    formState: { errors },
-  } = useForm({
+
+  //pagination logic
+  const ITEMS_PER_PAGE = 9;
+  const [page, setPage] = useState(1);
+
+
+  const { control, handleSubmit: submitForm, reset, formState: { errors }, } = useForm({
     defaultValues: {
       title: "",
       description: "",
       status: "todo",
       assignedTo: "",
       assignedBy: "",
+      dueDate: ""
     },
   });
 
@@ -51,7 +55,25 @@ export default function TaskDialog({
       });
     }
   }, [initialData, reset]);
-
+  const darkField = {
+    "& .MuiOutlinedInput-root": {
+      color: "#fff",
+      backgroundColor: "#111",
+      borderRadius: 2,
+      "& fieldset": {
+        borderColor: "#333",
+      },
+      "&:hover fieldset": {
+        borderColor: "#555",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: "#6366F1",
+      },
+    },
+    "& .MuiInputLabel-root": {
+      color: "#aaa",
+    },
+  };
   const onSubmit = (data) => {
     handleSubmit(data);
     handleClose();
@@ -63,14 +85,20 @@ export default function TaskDialog({
       onClose={handleClose}
       fullWidth
       maxWidth="sm"
-     
+      PaperProps={{
+        sx: {
+          backgroundColor: "#0b0b0b",
+          color: "#fff",
+          borderRadius: 4,
+        },
+      }}
     >
       <DialogTitle sx={{ fontWeight: 600, fontSize: 22 }}>
-        {initialData ? "✏️ Edit Task" : "🚀 Create New Task"}
+        {initialData ? " Edit Task" : " Create New Task"}
       </DialogTitle>
 
       <DialogContent sx={{ mt: 1 }}>
-        {/* Title */}
+
         <Controller
           name="title"
           control={control}
@@ -84,15 +112,12 @@ export default function TaskDialog({
               error={!!errors.title}
               helperText={errors.title?.message}
               variant="outlined"
-              sx={{
-                input: { color: "#fff" },
-                label: { color: "#aaa" },
-              }}
+              sx={darkField}
             />
           )}
         />
 
-        {/* Description */}
+
         <Controller
           name="description"
           control={control}
@@ -107,14 +132,41 @@ export default function TaskDialog({
               margin="normal"
               error={!!errors.description}
               helperText={errors.description?.message}
+              sx={darkField}
+            />
+          )}
+        />
+        <Controller
+          name="dueDate"
+          control={control}
+          rules={{
+            required: "Due date is required",
+            validate: (value) =>
+              new Date(value) > new Date() || "Date must be in the future",
+          }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              type="date"
+              label="Due Date"
+              fullWidth
+              margin="normal"
+              InputLabelProps={{ shrink: true }}
+              error={!!errors.dueDate}
+              helperText={errors.dueDate?.message}
               sx={{
-                textarea: { color: "#fff" },
-                label: { color: "#aaa" },
+                ...darkField,
+
+                "& input::-webkit-calendar-picker-indicator": {
+                  filter: "invert(1)",
+                },
+              }}
+              inputProps={{
+                min: new Date().toISOString().split("T")[0],
               }}
             />
           )}
         />
-
         <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.1)" }} />
 
         <Typography
@@ -124,7 +176,7 @@ export default function TaskDialog({
           Assignment & Status
         </Typography>
 
-        {/* Assign To */}
+
         <Controller
           name="assignedTo"
           control={control}
@@ -135,9 +187,7 @@ export default function TaskDialog({
               label="Assign To"
               fullWidth
               margin="normal"
-              sx={{
-                label: { color: "#aaa" },
-              }}
+              sx={darkField}
             >
               <MenuItem value="">Unassigned</MenuItem>
               {users?.map((user) => (
@@ -149,7 +199,7 @@ export default function TaskDialog({
           )}
         />
 
-        
+
         <Controller
           name="status"
           control={control}
@@ -163,9 +213,10 @@ export default function TaskDialog({
               margin="normal"
               error={!!errors.status}
               helperText={errors.status?.message}
+              sx={darkField}
             >
               <MenuItem value="todo">
-                <Chip label="Todo" size="small" />
+                <Chip label="Todo" size="small" color="primary" />
               </MenuItem>
               <MenuItem value="in-progress">
                 <Chip label="In Progress" color="warning" size="small" />
